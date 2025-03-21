@@ -1,78 +1,42 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
-# Initialize chat history if not already present
+
+st.set_page_config(page_title="LoveBot 💖", layout="centered")
+
+
+def display_messages():
+    for i, msg in enumerate(st.session_state.messages):
+        if msg["role"] != "system":
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
+
+# **State Management**
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = [{"role": "system", "content": "You are a flirty, supportive AI assistant that helps couples, listens to their problems, detects complaints, and provides fun relationship advice."}]
+if "complaints" not in st.session_state:
+    st.session_state.complaints = []  # Stores complaints separately
 
-st.set_page_config(page_title="Chat Interface", layout="wide")
 
-# Apply styles to keep elements fixed and chat scrollable
-st.markdown(
-    """
-    <style>
-        .fixed-top {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: white;
-            padding: 10px;
-            z-index: 1000;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .fixed-bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: white;
-            padding: 10px;
-            z-index: 1000;
-            box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .chat-container {
-            position: fixed;
-            top: 70px;
-            bottom: 70px;
-            left: 0;
-            right: 0;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        @media screen and (max-width: 768px) {
-            .fixed-top, .fixed-bottom {
-                padding: 8px;
-            }
-            .chat-container {
-                top: 60px;
-                bottom: 60px;
-            }
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# **Sidebar Navigation**
+page = st.sidebar.radio("📌 Navigate", ["Chat Area"])
 
-# Top fixed dropdown
-st.markdown("<div class='fixed-top'>", unsafe_allow_html=True)
-sender = st.selectbox("Who is texting?", ["Me", "Her"])
-st.markdown("</div>", unsafe_allow_html=True)
+### **1️⃣ Chat Area Page**
+if page == "Chat Area":
+    # **User Text Input**
+    user_input = st.chat_input("What's on your heart today? ❤️ (User typing)", key="user_input")
 
-# Scrollable chat container
-st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
-for msg in st.session_state.messages:
-    avatar_path = "me_avatar.png" if msg["sender"] == "Me" else "her_avatar.png"
-    if msg["sender"] == "Me":
-        st.chat_message("user", avatar=avatar_path).write(msg["text"])
-    else:
-        st.chat_message("assistant", avatar=avatar_path).write(msg["text"])
-st.markdown("</div>", unsafe_allow_html=True)
+    if user_input:
+        # Append the message from the user
+        st.session_state.messages.append({"role": "user", "content": user_input})
 
-# Bottom fixed input field
-st.markdown("<div class='fixed-bottom'>", unsafe_allow_html=True)
-message = st.text_input("Type a message:", key="message_input")
-if st.button("Send") and message:
-    st.session_state.messages.append({"sender": sender, "text": message})
-    st.rerun()
-st.markdown("</div>", unsafe_allow_html=True)
+        display_messages()
+
+    # **Assistant Text Input**
+    assistant_input = st.chat_input("Flirty assistant says... 💌", key="assistant_input")
+
+    if assistant_input:
+        # Append the message from the assistant
+        st.session_state.messages.append({"role": "assistant", "content": assistant_input})
+        display_messages()
+
+
